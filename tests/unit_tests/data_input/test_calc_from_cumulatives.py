@@ -3,24 +3,23 @@ import pytest
 import pandas as pd
 import webviz_subsurface._datainput.from_timeseries_cumulatives as from_cum
 
-DATA_DF = pd.read_csv(
-    Path().absolute()
-    / "webviz-subsurface-testdata"
-    / "reek_history_match"
-    / "share"
-    / "results"
-    / "tables"
-    / "unsmry--monthly.csv"
-)
-DATA_DF.DATE = DATA_DF.DATE.astype(str)
 
+def test_calc_from_cumulatives(pytestconfig):
 
-def test_calc_from_cumulatives():
     # Includes monthly data, 10 reals x 4 ensembles, 3 years and 1 month (2000-01-01 to 2003-02-01)
-
+    data_df = pd.read_csv(
+        Path(pytestconfig.getoption("testdata_loc"))
+        / "webviz-subsurface-testdata"
+        / "reek_history_match"
+        / "share"
+        / "results"
+        / "tables"
+        / "unsmry--monthly.csv"
+    )
+    data_df.DATE = data_df.DATE.astype(str)
     ## Test single column key, FOPT as average rate avg_fopr, monthly
     calc_df = from_cum.calc_from_cumulatives(
-        data=DATA_DF,
+        data=data_df,
         column_keys="FOPT",
         time_index="monthly",
         time_index_input="monthly",
@@ -28,7 +27,7 @@ def test_calc_from_cumulatives():
     )
 
     # Test real 0, iter-2
-    real_data = DATA_DF[(DATA_DF["REAL"] == 0) & (DATA_DF["ENSEMBLE"] == "iter-2")]
+    real_data = data_df[(data_df["REAL"] == 0) & (data_df["ENSEMBLE"] == "iter-2")]
     real_calc = calc_df[(calc_df["REAL"] == 0) & (calc_df["ENSEMBLE"] == "iter-2")]
 
     assert real_calc[real_calc.DATE == "2000-01-01"]["AVG_FOPR"].values == (
@@ -49,14 +48,14 @@ def test_calc_from_cumulatives():
 
     ## Test multiple column keys, WOPT:OP_1 as average rate avg_fopr, monthly
     calc_df = from_cum.calc_from_cumulatives(
-        data=DATA_DF,
+        data=data_df,
         column_keys=["WOPT:OP_1", "GOPT:OP"],
         time_index="yearly",
         time_index_input="monthly",
         as_rate=True,
     )
     # Test real 4, iter-0
-    real_data = DATA_DF[(DATA_DF["REAL"] == 4) & (DATA_DF["ENSEMBLE"] == "iter-0")]
+    real_data = data_df[(data_df["REAL"] == 4) & (data_df["ENSEMBLE"] == "iter-0")]
     real_calc = calc_df[(calc_df["REAL"] == 4) & (calc_df["ENSEMBLE"] == "iter-0")]
 
     assert real_calc[real_calc.DATE == "2000-01-01"]["AVG_WOPR:OP_1"].values == (
@@ -93,14 +92,14 @@ def test_calc_from_cumulatives():
 
     ## Test multiple column keys, WOPR_OP as average rate avg_fopr, monthly
     calc_df = from_cum.calc_from_cumulatives(
-        data=DATA_DF,
+        data=data_df,
         column_keys=["WGPT:OP_2", "GWPT:OP"],
         time_index="monthly",
         time_index_input="monthly",
         as_rate=False,
     )
     # Test real 9, iter-0
-    real_data = DATA_DF[(DATA_DF["REAL"] == 9) & (DATA_DF["ENSEMBLE"] == "iter-0")]
+    real_data = data_df[(data_df["REAL"] == 9) & (data_df["ENSEMBLE"] == "iter-0")]
     real_calc = calc_df[(calc_df["REAL"] == 9) & (calc_df["ENSEMBLE"] == "iter-0")]
 
     assert real_calc[real_calc.DATE == "2000-01-01"]["INTVL_WGPT:OP_2"].values == (
@@ -133,11 +132,22 @@ def test_calc_from_cumulatives():
     ],
 )
 def test_calc_from_cumulatives_errors(
-    column_keys, time_index, time_index_input, as_rate
+    pytestconfig, column_keys, time_index, time_index_input, as_rate
 ):
+    data_df = pd.read_csv(
+        Path(pytestconfig.getoption("testdata_loc"))
+        / "webviz-subsurface-testdata"
+        / "reek_history_match"
+        / "share"
+        / "results"
+        / "tables"
+        / "unsmry--monthly.csv"
+    )
+    data_df.DATE = data_df.DATE.astype(str)
+
     with pytest.raises(ValueError):
         calc_df = from_cum.calc_from_cumulatives(
-            data=DATA_DF,
+            data=data_df,
             column_keys=column_keys,
             time_index=time_index,
             time_index_input=time_index_input,
