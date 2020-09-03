@@ -170,7 +170,10 @@ class PvtPlot(WebvizPluginABC):
                 "id": self.uuid("color_by_selector"),
                 "content": ("Choose the basis for your colormap."),
             },
-            {"id": self.uuid("ensemble_selector"), "content": ("Select ensembles."),},
+            {
+                "id": self.uuid("ensemble_selector"),
+                "content": ("Select ensembles."),
+            },
             {
                 "id": self.uuid("phase_selector"),
                 "content": (
@@ -211,7 +214,10 @@ class PvtPlot(WebvizPluginABC):
                                     id=self.uuid("color_by"),
                                     clearable=False,
                                     options=[
-                                        {"label": i.lower().capitalize(), "value": i,}
+                                        {
+                                            "label": i.lower().capitalize(),
+                                            "value": i,
+                                        }
                                         for i in self.color_options
                                     ],
                                     value=self.color_options[0],
@@ -236,12 +242,18 @@ class PvtPlot(WebvizPluginABC):
                         html.Label(
                             id=self.uuid("phase_selector"),
                             children=[
-                                html.Span("Phase:", style={"font-weight": "bold"},),
+                                html.Span(
+                                    "Phase:",
+                                    style={"font-weight": "bold"},
+                                ),
                                 dcc.Dropdown(
                                     id=self.uuid("phase"),
                                     clearable=False,
                                     options=[
-                                        {"label": i.lower().capitalize(), "value": i,}
+                                        {
+                                            "label": i.lower().capitalize(),
+                                            "value": i,
+                                        }
                                         for i in self.phases
                                     ],
                                     multi=False,
@@ -380,7 +392,9 @@ class PvtPlot(WebvizPluginABC):
                 self.pvtnums[0],
             )
 
-    def add_webvizstore(self,) -> List[Tuple[Callable, List[Dict[str, Any]]]]:
+    def add_webvizstore(
+        self,
+    ) -> List[Tuple[Callable, List[Dict[str, Any]]]]:
         return (
             [
                 (

@@ -66,7 +66,10 @@ def filter_pvt_data_frame(
             else:
                 ens_merged_dataframe = (
                     pd.concat([ens_merged_dataframe, realization_data_frame])
-                    .drop_duplicates(subset=columns_subset, keep="first",)
+                    .drop_duplicates(
+                        subset=columns_subset,
+                        keep="first",
+                    )
                     .reset_index(drop=True)
                 )
 
