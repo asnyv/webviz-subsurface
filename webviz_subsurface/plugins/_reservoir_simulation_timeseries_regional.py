@@ -163,16 +163,11 @@ folder, to avoid risk of not extracting the right data.
                 ]
             )
         else:
-            total_smry = self.emodel.load_smry(
-                time_index=self.time_index,
-                column_keys=["F[OWG]PT"],
+            warnings.warn(
+                "No production vectors (FOPT, FGPT or FWPT) found for the provided"
+                " ensembles. Recoveries can not be calculated from inplace volumes."
             )
-            self.smry_init_prod = pd.concat(
-                [
-                    df[df["DATE"] == min(df["DATE"])]
-                    for _, df in total_smry.groupby("ENSEMBLE")
-                ]
-            )
+            self.smry_init_prod = pd.DataFrame()
         self.rec_ensembles = set(self.smry["ENSEMBLE"].unique())
         for col in self.smry_init_prod.columns:
             if col not in ReservoirSimulationTimeSeriesRegional.ENSEMBLE_COLUMNS:
