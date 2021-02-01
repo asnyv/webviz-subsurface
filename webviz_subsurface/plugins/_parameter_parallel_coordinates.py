@@ -215,6 +215,7 @@ folder, to avoid risk of not extracting the right data.
                 df=self.responsedf,
                 column_ignore=response_ignore,
                 column_include=response_include,
+                filter_columns=self.response_filters.keys(),
             )
 
         # Only select numerical parameters

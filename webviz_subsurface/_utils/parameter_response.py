@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from typing import Optional, List, Dict
 
 import pandas as pd
@@ -66,12 +67,17 @@ def filter_numerical_columns(
     df: pd.DataFrame,
     column_ignore: Optional[List[str]] = None,
     column_include: Optional[List[str]] = None,
+    filter_columns: Optional[Iterable] = None,
 ) -> List[str]:
-    """Filter to numerical columns, and respect ignore/include
+    """Filter to numerical columns, and respect ignore/include and filters.
     Also remove ENSEMBLE and REAL. Return list of column labels."""
     cols: List[str] = []
     for col in df.select_dtypes(include=np.number).columns.tolist():
-        if (column_ignore and col in column_ignore) or (col in ["ENSEMBLE", "REAL"]):
+        if (
+            (column_ignore and col in column_ignore)
+            or (col in ["ENSEMBLE", "REAL"])
+            or (filter_columns and col in filter_columns)
+        ):
             continue
         if column_include and col in column_include or column_include is None:
             cols.append(col)
