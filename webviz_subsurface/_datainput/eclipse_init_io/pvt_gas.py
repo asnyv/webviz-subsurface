@@ -38,6 +38,7 @@
 
 from typing import Tuple, Callable, List, Union, Optional
 
+import numpy as np
 from opm.io.ecl import EclFile
 
 from ..eclipse_unit import ConvertUnits, EclUnits, CreateUnitConverter, EclUnitEnum
@@ -125,11 +126,11 @@ class WetGas(PvxOBase):
         #        :       :      :          :            :
         return self.interpolant.viscosity(pressure, ratio)
 
-    def get_keys(self) -> List[float]:
+    def get_keys(self) -> np.ndarray:
         """Returns a list of all primary pressure values (Pg)"""
         return self.interpolant.get_keys()
 
-    def get_independents(self) -> List[float]:
+    def get_independents(self) -> np.ndarray:
         """Returns a list of all gas ratio values (Rv)"""
         return self.interpolant.get_independents()
 
@@ -190,7 +191,7 @@ class DryGas(PvxOBase):
         """
         return self.interpolant.viscosity(pressure)
 
-    def get_keys(self) -> List[float]:
+    def get_keys(self) -> np.ndarray:
         """Returns a list of all primary keys.
 
         Since this is dry gas, there is no dependency on Rv.
@@ -200,7 +201,7 @@ class DryGas(PvxOBase):
         """
         return self.interpolant.get_keys()
 
-    def get_independents(self) -> List[float]:
+    def get_independents(self) -> np.ndarray:
         """Returns a list of all independent pressure values (Pg)"""
         return self.interpolant.get_independents()
 

@@ -74,15 +74,15 @@ class PvxOBase:
         """Base implementation, raises a NotImplementedError."""
         raise NotImplementedError("You must not create objects of this base class.")
 
-    def get_keys(self) -> List[float]:
-        """Returns a list of all primary keys.
+    def get_keys(self) -> np.ndarray:
+        """Returns a numpy.ndarray of all primary keys.
 
         Base implementation, raises a NotImplementedError.
         """
         raise NotImplementedError("You must not call any methods of this base class.")
 
-    def get_independents(self) -> List[float]:
-        """Returns a list of all independents.
+    def get_independents(self) -> np.ndarray:
+        """Returns a numpy.ndarray of all independents.
 
         Base implementation, raises a NotImplementedError.
         """
@@ -90,11 +90,11 @@ class PvxOBase:
 
     # pylint: disable=R0201
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
+        self, ratio: np.ndarray, pressure: np.ndarray
     ) -> List[float]:
         """Args:
-            ratio: List of ratio (key) values the volume factor values are requested for.
-            pressure: List of pressure values the volume factor values are requested for.
+            ratio: np.ndarray of ratio (key) values the volume factor values are requested for.
+            pressure: np.ndarray of pressure values the volume factor values are requested for.
 
         Returns:
             A list of all volume factor values for the given ratio and pressure values.
@@ -103,10 +103,10 @@ class PvxOBase:
         """
         raise NotImplementedError("You must not call any methods of this base class.")
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> List[float]:
         """Args:
-            ratio: List of ratio (key) values the viscosity values are requested for.
-            pressure: List of pressure values the viscosity values are requested for.
+            ratio: np.ndarray of ratio (key) values the viscosity values are requested for.
+            pressure: np.ndarray of pressure values the viscosity values are requested for.
 
         Returns:
             A list of all viscosity values for the given ratio and pressure values.
@@ -123,17 +123,17 @@ class PVxx:
         """Base implementation, raises a NotImplementedError."""
         raise NotImplementedError("You must not create objects of this base class.")
 
-    def get_keys(self) -> List[float]:
+    def get_keys(self) -> np.ndarray:
         """Returns:
-            A list of all primary keys.
+            A numpy.ndarray of all primary keys.
 
         Base implementation, raises a NotImplementedError.
         """
         raise NotImplementedError("You must not call any methods of this base class.")
 
-    def get_independents(self) -> List[float]:
+    def get_independents(self) -> np.ndarray:
         """Returns:
-            A list of all independents.
+            A np.ndarray of all independents.
 
         Base implementation, raises a NotImplementedError.
         """
@@ -230,15 +230,15 @@ class PVDx(PVxx):
 
         self.__interpolation = interpolate.interp1d(self.x, self.y, axis=1)
 
-    def get_keys(self) -> List[float]:
-        """Returns a list of all primary keys.
+    def get_keys(self) -> np.ndarray:
+        """Returns a np.ndarray of all primary keys.
 
         Since this is dry/dead gas/oil, there is no dependency on Rv/Rs.
         Hence, this method returns a list holding floats of value 0.0
         for each independent value.
 
         """
-        return [0.0 for _ in self.x]
+        return np.zeros(len(self.x))
 
     def get_independents(self) -> np.ndarray:
         """Returns a list of all independents.
@@ -248,7 +248,7 @@ class PVDx(PVxx):
         """
         return self.x
 
-    def formation_volume_factor(self, pressure: List[float]) -> List[float]:
+    def formation_volume_factor(self, pressure: np.ndarray) -> List[float]:
         """Computes a list of formation volume factor values
         for the given pressure values.
 
@@ -265,7 +265,7 @@ class PVDx(PVxx):
         # 1 / (1 / B)
         return self.__compute_quantity(pressure, lambda p: 1.0 / self.__fvf_recip(p))
 
-    def viscosity(self, pressure: List[float]) -> List[float]:
+    def viscosity(self, pressure: np.ndarray) -> List[float]:
         """Computes a list of viscosity values for the given pressure values.
 
         Args:
@@ -285,7 +285,7 @@ class PVDx(PVxx):
 
     @staticmethod
     def __compute_quantity(
-        pressures: List[float], evaluate: Callable[[Any], Any]
+        pressures: np.ndarray, evaluate: Callable[[Any], Any]
     ) -> List[float]:
         """Calls the given evaluate function with each of the values
         in the given pressure list and returns a list of results.

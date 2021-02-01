@@ -38,6 +38,7 @@
 
 from typing import Callable, List, Any, Union, Optional
 
+import numpy as np
 from opm.io.ecl import EclFile
 
 from ..eclipse_unit import ConvertUnits, EclUnits, CreateUnitConverter, EclUnitEnum
@@ -200,26 +201,26 @@ class WaterImpl(PvxOBase):
             pressure, lambda p: self.__recip_fvf(p) / self.__recip_fvf_visc(p)
         )
 
-    def get_keys(self) -> List[float]:
+    def get_keys(self) -> np.ndarray:
         """Returns a list of all primary keys.
 
         Since this is water, there is no dependency on any ratio.
         Hence, this method returns a list holding a single float of value 0.0.
 
         """
-        return [
-            0.0,
-        ]
+        return np.zeros(1)
 
-    def get_independents(self) -> List[float]:
+    def get_independents(self) -> np.ndarray:
         """Returns a list of all independent pressure values (Pw).
 
         Since this is water, this does return with only one single pressure value,
         the reference pressure.
         """
-        return [
-            self.__pw_ref,
-        ]
+        return np.array(
+            [
+                self.__pw_ref,
+            ]
+        )
 
 
 class Water(FluidImplementation):
