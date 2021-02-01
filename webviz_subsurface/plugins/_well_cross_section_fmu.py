@@ -532,9 +532,13 @@ e.g. [xtgeo](https://xtgeo.readthedocs.io/en/latest/).
             layout.update(self.plotly_theme["layout"])
             if "keep_zoom_state" in options:
                 layout["uirevision"] = "keep"
-            fencespec: List[List[float]] = [
-                [coord[0], coord[1]] for coord in xsect.fence
-            ]
+            # [[]] "solves" type hint, but is pretty dirty
+            # and probably wrong...
+            fencespec: List[List[float]] = (
+                [[coord[0], coord[1]] for coord in xsect.fence]
+                if xsect.fence is not None
+                else [[]]
+            )
             return {"data": xsect.data, "layout": layout}, fencespec
 
         @app.callback(

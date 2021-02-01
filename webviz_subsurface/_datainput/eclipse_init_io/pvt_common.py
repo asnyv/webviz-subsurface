@@ -240,7 +240,7 @@ class PVDx(PVxx):
         """
         return [0.0 for _ in self.x]
 
-    def get_independents(self) -> List[float]:
+    def get_independents(self) -> np.ndarray:
         """Returns a list of all independents.
 
         In case of gas/oil this returns a list of pressure values.
@@ -440,11 +440,11 @@ class PVTx(PVxx):
 
         warnings.filterwarnings("default")
 
-    def get_keys(self) -> List[float]:
+    def get_keys(self) -> np.ndarray:
         """Returns a list of all primary keys."""
         return self.keys
 
-    def get_independents(self) -> List[float]:
+    def get_independents(self) -> np.ndarray:
         """Returns a list of all independents."""
         return self.x
 
