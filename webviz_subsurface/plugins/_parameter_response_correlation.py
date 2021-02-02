@@ -178,10 +178,7 @@ folder, to avoid risk of not extracting the right data.
                     column_keys=self.column_keys,
                     time_index=self.time_index,
                 )
-                self.responsedf = self.emodel.load_smry(
-                    column_keys=self.column_keys,
-                    time_index=self.time_index,
-                )
+                self.responsedf = self.emodel.get_smry_df()
                 self.response_filters["DATE"] = "single"
         else:
             raise ValueError(
