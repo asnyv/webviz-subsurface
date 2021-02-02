@@ -161,21 +161,9 @@ folder, to avoid risk of not extracting the right data.
                 ]
             )
         else:
-<<<<<<< HEAD
             warnings.warn(
                 "No production vectors (FOPT, FGPT or FWPT) found for the provided"
                 " ensembles. Recoveries can not be calculated from inplace volumes."
-=======
-            total_smry = self.emodel.load_additional_smry_df(
-                time_index=self.time_index,
-                column_keys=["F[OWG]PT"],
-            )
-            self.smry_init_prod = pd.concat(
-                [
-                    df[df["DATE"] == min(df["DATE"])]
-                    for _, df in total_smry.groupby("ENSEMBLE")
-                ]
->>>>>>> ceesol/sigurdp/mem-hack-ensembles
             )
             self.smry_init_prod = pd.DataFrame()
         self.rec_ensembles = set(self.smry["ENSEMBLE"].unique())
