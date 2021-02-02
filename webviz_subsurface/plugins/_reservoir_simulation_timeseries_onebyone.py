@@ -164,7 +164,7 @@ folder, to avoid risk of not extracting the right data.
                 time_index=self.time_index,
                 column_keys=self.column_keys,
             )
-            smry = self.emodel.get_smry_df()
+            self.smry = self.emodel.get_smry_df()
 
             self.smry_meta = self.emodel.get_smry_meta_df()
 
