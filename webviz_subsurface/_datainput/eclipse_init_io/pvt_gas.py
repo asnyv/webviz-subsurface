@@ -36,7 +36,7 @@
 #
 ########################################
 
-from typing import Tuple, Callable, List, Union, Optional
+from typing import Tuple, Callable, Union, Optional
 
 import numpy as np
 from opm.io.ecl import EclFile
