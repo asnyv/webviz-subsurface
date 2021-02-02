@@ -55,7 +55,7 @@ class EclPropertyTableRawData:  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self) -> None:
-        self.data: List[float] = []
+        self.data = np.zeros(0)
         self.primary_key: List[int] = []
         self.num_primary = 0
         self.num_rows = 0
@@ -91,7 +91,7 @@ class PvxOBase:
     # pylint: disable=R0201
     def formation_volume_factor(
         self, ratio: np.ndarray, pressure: np.ndarray
-    ) -> List[float]:
+    ) -> np.ndarray:
         """Args:
             ratio: np.ndarray of ratio (key) values the volume factor values are requested for.
             pressure: np.ndarray of pressure values the volume factor values are requested for.
@@ -103,7 +103,7 @@ class PvxOBase:
         """
         raise NotImplementedError("You must not call any methods of this base class.")
 
-    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Args:
             ratio: np.ndarray of ratio (key) values the viscosity values are requested for.
             pressure: np.ndarray of pressure values the viscosity values are requested for.
@@ -248,7 +248,7 @@ class PVDx(PVxx):
         """
         return self.x
 
-    def formation_volume_factor(self, pressure: np.ndarray) -> List[float]:
+    def formation_volume_factor(self, pressure: np.ndarray) -> np.ndarray:
         """Computes a list of formation volume factor values
         for the given pressure values.
 
@@ -265,7 +265,7 @@ class PVDx(PVxx):
         # 1 / (1 / B)
         return self.__compute_quantity(pressure, lambda p: 1.0 / self.__fvf_recip(p))
 
-    def viscosity(self, pressure: np.ndarray) -> List[float]:
+    def viscosity(self, pressure: np.ndarray) -> np.ndarray:
         """Computes a list of viscosity values for the given pressure values.
 
         Args:
@@ -286,7 +286,7 @@ class PVDx(PVxx):
     @staticmethod
     def __compute_quantity(
         pressures: np.ndarray, evaluate: Callable[[Any], Any]
-    ) -> List[float]:
+    ) -> np.ndarray:
         """Calls the given evaluate function with each of the values
         in the given pressure list and returns a list of results.
 
@@ -298,10 +298,10 @@ class PVDx(PVxx):
             List of values resulting from evaluating the pressure values.
 
         """
-        result: List[float] = []
+        result = np.zeros(len(pressures))
 
-        for pressure in pressures:
-            result.append(float(evaluate(pressure)))
+        for i, pressure in enumerate(pressures):
+            result[i] = float(evaluate(pressure))
 
         return result
 
@@ -448,13 +448,13 @@ class PVTx(PVxx):
         """Returns a list of all independents."""
         return self.x
 
-    def key_valid(self, key: List[float]) -> None:
+    def key_valid(self, key: np.ndarray) -> None:
         if self.__single_key and not all(k == self.keys[0] for k in key):
             raise ValueError(
                 "Impossible to perform requested inter-/extrapolation due to insufficient data."
             )
 
-    def formation_volume_factor(self, key: List[float], x: List[float]) -> List[float]:
+    def formation_volume_factor(self, key: np.ndarray, x: np.ndarray) -> np.ndarray:
         """Computes a list of formation volume factor values
         for the given ratio and pressure values.
 
@@ -482,7 +482,7 @@ class PVTx(PVxx):
             lambda recip_fvf: 1.0 / recip_fvf,
         )
 
-    def viscosity(self, key: List[float], x: List[float]) -> List[float]:
+    def viscosity(self, key: np.ndarray, x: np.ndarray) -> np.ndarray:
         """Computes a list of viscosity values for the given ratio and pressure values.
 
         Args:
@@ -516,11 +516,11 @@ class PVTx(PVxx):
 
     @staticmethod
     def __compute_quantity(
-        key: List[float],
-        x: List[float],
+        key: np.ndarray,
+        x: np.ndarray,
         inner_function: Callable,
         outer_function: Callable,
-    ) -> List[float]:
+    ) -> np.ndarray:
         """Calls the evaluate method with each of the values
         in the given primary key list and the given inner_function
         and returns a list of the results after the outer_function
@@ -538,10 +538,9 @@ class PVTx(PVxx):
             List of result values
 
         """
-        results: List[float] = []
 
         num_vals = len(key)
-
+        results = np.zeros(num_vals)
         if len(x) != num_vals:
             raise ValueError(
                 "Number of inner sampling points does not match number of outer sampling points."
@@ -550,7 +549,7 @@ class PVTx(PVxx):
         for i in range(0, num_vals):
             quantity = inner_function(key[i], x[i])
 
-            results.append(float(outer_function(quantity)))
+            results[i] = float(outer_function(quantity))
 
         return results
 
@@ -606,7 +605,7 @@ def is_const_compr_index() -> int:
 
 def surface_mass_density(
     ecl_file: EclFile, phase: EclPhaseIndex, keep_unit_system: bool = True
-) -> List[float]:
+) -> np.ndarray:
     """Extracts the surface mass density from the given Eclipse file for the given phase.
 
     Args:
@@ -768,12 +767,12 @@ class FluidImplementation:
         return f"{unit_system.pressure().symbol}"
 
     def formation_volume_factor(
-        self, region_index: int, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, region_index: int, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Args:
             region_index: Index of the requested PVT region
-            ratio: A list of ratio values the data is requested for
-            pressure: A list of pressure values the data is requested for
+            ratio: numpy.ndarray of ratio values the data is requested for
+            pressure: A numpy.ndarray of pressure values the data is requested for
 
         Returns:
             A list of the formation volume factor values according to the given values.
@@ -796,8 +795,8 @@ class FluidImplementation:
         raise NotImplementedError("This method cannot be called from the base class.")
 
     def viscosity(
-        self, region_index: int, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, region_index: int, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Args:
             region_index: Index of the requested PVT region
             ratio: A list of ratio values the data is requested for

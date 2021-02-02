@@ -90,8 +90,8 @@ class WetGas(PvxOBase):
         self.interpolant = PVTx(index_table, raw, convert)
 
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Computes a list of formation volume factor values
         for the given ratio and pressure values.
 
@@ -109,7 +109,7 @@ class WetGas(PvxOBase):
         #        :       :      :          :            :
         return self.interpolant.formation_volume_factor(pressure, ratio)
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Computes a list of viscosity values for the given ratio and pressure values.
 
         Args:
@@ -163,8 +163,8 @@ class DryGas(PvxOBase):
         self.interpolant = PVDx(table_index, raw, convert)
 
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Computes a list of formation volume factor values
         for the given pressure values.
 
@@ -178,7 +178,7 @@ class DryGas(PvxOBase):
         """
         return self.interpolant.formation_volume_factor(pressure)
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Computes a list of viscosity values for the given pressure values.
 
         Args:
@@ -221,7 +221,7 @@ class Gas(FluidImplementation):
         self,
         raw: EclPropertyTableRawData,
         unit_system: int,
-        surface_mass_densities: List[float],
+        surface_mass_densities: np.ndarray,
         keep_unit_system: bool = False,
     ) -> None:
         """Initializes a Gas object.

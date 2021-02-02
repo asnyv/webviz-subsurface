@@ -91,8 +91,8 @@ class LiveOil(PvxOBase):
         self.interpolant = PVTx(index_table, raw, convert)
 
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Args:
             ratio: List of ratio (key) values the volume factor values are requested for.
             pressure: List of pressure values the volume factor values are requested for.
@@ -103,7 +103,7 @@ class LiveOil(PvxOBase):
         """
         return self.interpolant.formation_volume_factor(ratio, pressure)
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Args:
             ratio: List of ratio (key) values the viscosity values are requested for.
             pressure: List of pressure values the viscosity values are requested for.
@@ -151,8 +151,8 @@ class DeadOil(PvxOBase):
         self.interpolant = PVDx(table_index, raw, convert)
 
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Args:
             ratio: Dummy argument, only to conform to interface of base class.
             pressure: List of pressure values the volume factor values are requested for.
@@ -163,7 +163,7 @@ class DeadOil(PvxOBase):
         """
         return self.interpolant.formation_volume_factor(pressure)
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Args:
             ratio: Dummy argument, only to conform to interface of base class.
             pressure: List of pressure values the viscosity values are requested for.
@@ -238,8 +238,8 @@ class DeadOilConstCompr(PvxOBase):
             raise ValueError("Invalid Input PVCDO Table")
 
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Computes a list of formation volume factor values
         for the given pressure values.
 
@@ -253,7 +253,7 @@ class DeadOilConstCompr(PvxOBase):
         """
         return self.__evaluate(pressure, lambda p: 1.0 / self.__recip_fvf(p))
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Computes a list of viscosity values for the given pressure values.
 
         Args:
@@ -329,8 +329,8 @@ class DeadOilConstCompr(PvxOBase):
 
     @staticmethod
     def __evaluate(
-        pressures: List[float], calculate: Callable[[Any], Any]
-    ) -> List[float]:
+        pressures: np.ndarray, calculate: Callable[[Any], Any]
+    ) -> np.ndarray:
         """Calls the calculate method with each of the values
         in the pressures list and returns the results.
 
@@ -342,12 +342,7 @@ class DeadOilConstCompr(PvxOBase):
             List of result values
 
         """
-        quantities: List[float] = []
-
-        for pressure in pressures:
-            quantities.append(calculate(pressure))
-
-        return quantities
+        return np.array([calculate(pressure) for pressure in pressures])
 
     def get_keys(self) -> np.ndarray:
         """Returns a list of all primary keys.
@@ -387,7 +382,7 @@ class Oil(FluidImplementation):
         raw: EclPropertyTableRawData,
         unit_system: int,
         is_const_compr: bool,
-        surface_mass_densities: List[float],
+        surface_mass_densities: np.ndarray,
         keep_unit_system: bool = True,
     ):
         """Initializes an Oil object.

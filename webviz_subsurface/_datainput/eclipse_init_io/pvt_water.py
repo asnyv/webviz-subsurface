@@ -133,8 +133,8 @@ class WaterImpl(PvxOBase):
 
     @staticmethod
     def __evaluate(
-        pressures: List[float], calculate: Callable[[Any], Any]
-    ) -> List[float]:
+        pressures: np.ndarray, calculate: Callable[[Any], Any]
+    ) -> np.ndarray:
         """Calls the calculate method with each of the values
         in the pressures list and returns the results.
 
@@ -146,12 +146,7 @@ class WaterImpl(PvxOBase):
             List of result values
 
         """
-        quantities: List[float] = []
-
-        for pressure in pressures:
-            quantities.append(calculate(pressure))
-
-        return quantities
+        return np.array([calculate(pressure) for pressure in pressures])
 
     @staticmethod
     def __exp(x: float) -> float:
@@ -170,8 +165,8 @@ class WaterImpl(PvxOBase):
         return 1.0 + x * (1.0 + x / 2.0)
 
     def formation_volume_factor(
-        self, ratio: List[float], pressure: List[float]
-    ) -> List[float]:
+        self, ratio: np.ndarray, pressure: np.ndarray
+    ) -> np.ndarray:
         """Computes a list of formation volume factor values
         for the given pressure values.
 
@@ -185,7 +180,7 @@ class WaterImpl(PvxOBase):
         """
         return self.__evaluate(pressure, lambda p: 1.0 / self.__recip_fvf(p))
 
-    def viscosity(self, ratio: List[float], pressure: List[float]) -> List[float]:
+    def viscosity(self, ratio: np.ndarray, pressure: np.ndarray) -> np.ndarray:
         """Computes a list of viscosity values for the given pressure values.
 
         Args:
@@ -238,7 +233,7 @@ class Water(FluidImplementation):
         self,
         raw: EclPropertyTableRawData,
         unit_system: int,
-        surface_mass_densities: List[float],
+        surface_mass_densities: np.ndarray,
         keep_unit_system: bool = True,
     ):
         """Initializes a Water object.
@@ -334,7 +329,7 @@ class Water(FluidImplementation):
         self,
         raw: EclPropertyTableRawData,
         unit_system: int,
-        surface_mass_densities: List[float],
+        surface_mass_densities: np.ndarray,
     ) -> None:
         """Creates interpolants for water from the given raw Eclipse data and uses
         a water unit converter based on the given unit system.
