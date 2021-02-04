@@ -1,6 +1,7 @@
 import json
 from typing import Union, Optional, List, Callable, Tuple, Dict, Any
 import pathlib
+import datetime
 
 import inspect
 import tracemalloc
@@ -13,6 +14,7 @@ from .ensemble_model import EnsembleModel
 
 # !!!!!!!!!!!!!!!!!!
 _ensemble_set_model_cache: Dict[str, "EnsembleSetModel"] = {}
+tracemalloc.start()
 
 
 class EnsembleSetModel:
@@ -30,7 +32,7 @@ class EnsembleSetModel:
 
         #!!!!!!!!!!!!!!!!!!!!!
         # export PYTHONTRACEMALLOC=1
-        tracemalloc.start()
+        # tracemalloc.start()
 
         current0, peak0 = tracemalloc.get_traced_memory()
 
@@ -63,6 +65,11 @@ class EnsembleSetModel:
             ensemble_paths=ensemble_paths,
             time_index=time_index,
             column_keys=column_keys,
+        )
+        current, peak = tracemalloc.get_traced_memory()
+
+        print(
+            f"EnsembleSetModel.get_or_create_model() -- preset memory usage: {current / 10**6}MB;  delta: {(current-current0) / 10**6}MB;  peak: {peak / 10**6}MB"
         )
         _ensemble_set_model_cache[key] = new_model
 
@@ -98,9 +105,14 @@ class EnsembleSetModel:
 
         tmp_smry_meta: dict = {}
         for ensemble in self._ensembles:
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')}: start meta {ensemble.ensemble_name}"
+            )
             tmp_smry_meta.update(
                 ensemble.load_smry_meta(column_keys=column_keys).T.to_dict()
             )
+            current, peak = tracemalloc.get_traced_memory()
+            print(f"end current memory: {current}, peak {peak}")
         self._loaded_smry_meta_df = pd.DataFrame(tmp_smry_meta).transpose()
 
     def __repr__(self) -> str:
@@ -121,6 +133,9 @@ class EnsembleSetModel:
         """Runs the provided function for each ensemble and concats dataframes"""
         dfs = []
         for ensemble in ensemble_models:
+            print(
+                f"{datetime.datetime.now().strftime('%H:%M:%S')}: {ensemble.ensemble_name}   start   {func}"
+            )
             try:
                 dframe = getattr(ensemble, func)(**kwargs)
                 dframe.insert(0, "ENSEMBLE", ensemble.ensemble_name)
@@ -129,6 +144,9 @@ class EnsembleSetModel:
                 # Happens if an ensemble is missing some data
                 # Warning has already been issued at initialization
                 pass
+            current, peak = tracemalloc.get_traced_memory()
+            print(f"end current memory: {current}, peak {peak}")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: start concat {func}")
         if dfs:
             return pd.concat(dfs, sort=False)
         raise KeyError(f"No data found for {func} with arguments: {kwargs}")

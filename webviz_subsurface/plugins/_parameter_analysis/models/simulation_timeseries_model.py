@@ -15,6 +15,10 @@ from webviz_subsurface._utils.simulation_timeseries import (
 from ..utils.colors import hex_to_rgb
 
 
+###
+import time
+
+
 class SimulationTimeSeriesModel:
     """Class to process and and visualize ensemble timeseries"""
 
@@ -165,9 +169,9 @@ class SimulationTimeSeriesModel:
         self, ensemble: str, date: str, vectors: list = None
     ) -> pd.DataFrame:
         vectors = vectors if vectors is not None else self.vectors
-        return self.dataframe[vectors + ["REAL"]].loc[
+        return self.dataframe.loc[
             (self.dataframe["ENSEMBLE"] == ensemble) & (self.dataframe["DATE"] == date)
-        ]
+        ][vectors + ["REAL"]]
 
     @CACHE.memoize(timeout=CACHE.TIMEOUT)
     def add_statistic_traces(self, ensembles: list, vector: str) -> list:
@@ -268,17 +272,22 @@ class SimulationTimeSeriesModel:
         self, ensemble: str, vector: str, real_filter: pd.Series = None
     ) -> list:
         """Renders line trace for each realization, includes history line if present"""
-        dataframe = self.dataframe[self.dataframe["ENSEMBLE"] == ensemble]
+        t0 = time.time()
+        dataframe = self.dataframe[["ENSEMBLE", "REAL", "DATE", vector]]
+        dataframe = dataframe.loc[dataframe["ENSEMBLE"] == ensemble]
+        print(f"  ens filter real traces: {time.time()-t0}")
         dataframe = (
             dataframe[dataframe["REAL"].isin(real_filter)]
             if real_filter is not None
             else dataframe
         )
+        print(f"  real filter real traces: {time.time()-t0}")
+        line_shape = self.get_line_shape(vector)
         traces = [
             {
-                "line": {"shape": self.get_line_shape(vector)},
-                "x": list(real_df["DATE"]),
-                "y": list(real_df[vector]),
+                "line": {"shape": line_shape},
+                "x": real_df["DATE"],
+                "y": real_df[vector],
                 "name": ensemble,
                 "customdata": real,
                 "legendgroup": ensemble,
@@ -287,7 +296,7 @@ class SimulationTimeSeriesModel:
             }
             for real_idx, (real, real_df) in enumerate(dataframe.groupby("REAL"))
         ]
-
+        print(f"  traces real traces: {time.time()-t0}")
         if (
             historical_vector(vector=vector, smry_meta=self.metadata)
             in dataframe.columns
@@ -297,6 +306,8 @@ class SimulationTimeSeriesModel:
                     dataframe, historical_vector(vector=vector, smry_meta=self.metadata)
                 )
             )
+
+        print(f"  hist and return real traces: {time.time()-t0}")
         return traces
 
     def daterange_for_plot(self, vector: str):

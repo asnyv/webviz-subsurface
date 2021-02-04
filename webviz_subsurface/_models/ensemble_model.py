@@ -121,7 +121,7 @@ class EnsembleModel:
     def _load_parameters(self) -> pd.DataFrame:
         return self.load_ensemble().parameters
 
-    @CACHE.memoize(timeout=CACHE.TIMEOUT)
+    # @CACHE.memoize(timeout=CACHE.TIMEOUT)
     @webvizstore
     def _load_smry(
         self,
@@ -129,10 +129,10 @@ class EnsembleModel:
         column_keys: Optional[list] = None,
     ) -> pd.DataFrame:
         return self.load_ensemble().get_smry(
-            time_index=time_index, column_keys=column_keys
+            time_index=time_index, column_keys=column_keys, include_restart=False
         )
 
-    @CACHE.memoize(timeout=CACHE.TIMEOUT)
+    # @CACHE.memoize(timeout=CACHE.TIMEOUT)
     @webvizstore
     def _load_smry_meta(
         self,

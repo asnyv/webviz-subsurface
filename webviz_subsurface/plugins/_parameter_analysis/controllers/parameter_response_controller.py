@@ -14,6 +14,8 @@ from ..utils.colors import find_intermediate_color
 from ..figures.correlation_figure import CorrelationFigure
 from ..utils.colors import hex_to_rgb, rgb_to_hex
 
+##
+import time
 
 # pylint: disable=too-many-statements,
 def parameter_response_controller(parent, app):
@@ -59,7 +61,8 @@ def parameter_response_controller(parent, app):
         Main callback to update plots. Initially all plots are generated,
         while only relevant plots are updated in subsequent callbacks
         """
-
+        print("update graphs")
+        t0 = time.time()
         if (
             dash.callback_context.triggered is None
             or dash.callback_context.triggered[0]["prop_id"] == "."
@@ -81,17 +84,20 @@ def parameter_response_controller(parent, app):
                 xaxisrange=[min(daterange[0], date), max(daterange[1], date)],
                 real_filter=None,
             )
-
+        print(f"made timeseries graph {time.time()-t0}")
         if parent.uuid("plot-options") not in ctx or initial_run:
             vectors_filtered = filter_vectors(
                 parent, vector_type_filter, vector_item_filters
             )
+            print(time.time())
+            print(f"Filter vectors {time.time()-t0}")
             if vector not in vectors_filtered:
                 vectors_filtered.append(vector)
             merged_df = merge_parameter_and_vector_df(
                 parent, ensemble, vectors_filtered, date
             )
-
+            print(time.time())
+        print(f"filtered and merged param + vec {time.time()-t0}")
         # Make correlation figure for vector
         if options["autocompute_corr"] and (
             relevant_ctx(parent, ctx, operation="vector_correlation") or initial_run
@@ -99,13 +105,13 @@ def parameter_response_controller(parent, app):
             corr_v_fig = make_correlation_figure(
                 merged_df, response=vector, corrwith=parent.pmodel.parameters
             ).figure
-
+            print(f"Made corr fig {time.time()-t0}")
         # Get clicked parameter correlation bar or largest bar initially
         parameter = (
             parameter if parameter is not None else corr_v_fig["data"][0]["y"][-1]
         )
         corr_v_fig = color_corr_bars(corr_v_fig, parameter, color, options["opacity"])
-
+        print(f"corr col bars {time.time()-t0}")
         # Make correlation figure for parameter
         if options["autocompute_corr"] and (
             relevant_ctx(parent, ctx, operation="parameter_correlation") or initial_run
@@ -113,33 +119,34 @@ def parameter_response_controller(parent, app):
             corr_p_fig = make_correlation_figure(
                 merged_df, response=parameter, corrwith=vectors_filtered
             ).figure
-
+            print(f"Made corr fig {time.time()-t0}")
         corr_p_fig = color_corr_bars(corr_p_fig, vector, color, options["opacity"])
-
+        print(f"color corr bars {time.time()-t0}")
         # Create scatter plot of vector vs parameter
         if relevant_ctx(parent, ctx, operation="scatter") or initial_run:
             scatter_fig = update_scatter_graph(merged_df, vector, parameter, color)
-
+            print(f"Made scatter fig {time.time()-t0}")
         scatter_fig = scatter_fig_color_update(scatter_fig, color, options["opacity"])
-
+        print(f"Colored scatter fig {time.time()-t0}")
         # Order realizations sorted on value of parameter and color traces
         df_value_norm = parent.pmodel.get_real_and_value_df(
             ensemble, parameter=parameter, normalize=True
         )
+        print(f"Get real and value df {time.time()-t0}")
         if relevant_ctx(parent, ctx, operation="color_timeseries_fig") or initial_run:
             timeseries_fig = color_timeseries_graph(
                 timeseries_fig, ensemble, parameter, vector, df_value_norm
             )
-
+        print(f"timeseries fig {time.time()-t0}")
         # Draw date selected as line
         timeseries_fig = add_date_line(timeseries_fig, date, options["show_dateline"])
-
+        print(f"date line {time.time()-t0}")
         # Ensure xaxis covers selected date
         if parent.uuid("date-selected") in ctx:
             timeseries_fig["layout"]["xaxis"].update(
                 range=[min(daterange[0], date), max(daterange[1], date)]
             )
-
+        print(f"Layout {time.time()-t0}")
         return timeseries_fig, scatter_fig, corr_v_fig, corr_p_fig
 
     @app.callback(
@@ -355,10 +362,11 @@ def filter_vectors(parent, vector_types: list, vector_items: list):
         )
     )
     items = list(chain.from_iterable(vector_items))
-    filtered_vectors_with_items = [
-        v for v in vectors if any(v.split(":")[1] == x for x in items if ":" in v)
+    return [
+        v
+        for v in vectors
+        if (":" not in v) or any(v.split(":")[1] == x for x in items if ":" in v)
     ]
-    return [v for v in vectors if v in filtered_vectors_with_items or ":" not in v]
 
 
 def update_timeseries_graph(
@@ -464,19 +472,30 @@ def set_real_color(df_norm, real_no: str):
 def merge_parameter_and_vector_df(parent, ensemble: str, vectors: list, date: str):
     """Merge parameter dataframe with vector dataframe on given date """
     # Get dataframe with vector and REAL
+    t0 = time.time()
+    print("merging params and vector")
+    # print(vectors)
     vector_df = parent.vmodel.get_ensemble_vectors_for_date(
         ensemble=ensemble,
         vectors=vectors,
         date=date,
-    ).copy()
+    )
+    print(f"Got ens vectors for data {time.time()-t0}")
+
     vector_df["REAL"] = vector_df["REAL"].astype(int)
+    print(f"Cast REAL to int {time.time()-t0}")
     # Get dataframe with parameters
     param_df = parent.pmodel.dataframe.copy()
+    print(f"Copy params {time.time()-t0}")
     param_df = param_df[param_df["ENSEMBLE"] == ensemble]
+    print(f"Ens filter params {time.time()-t0}")
     param_df["REAL"] = param_df["REAL"].astype(int)
+    print(f"Cast param REAL to int {time.time()-t0}")
     # Return merged dataframe
     param_df.set_index("REAL", inplace=True)
     vector_df.set_index("REAL", inplace=True)
+    print(f"Set indices before join {time.time()-t0}")
+    print(time.time())
     return vector_df.join(param_df).reset_index()
 
 
