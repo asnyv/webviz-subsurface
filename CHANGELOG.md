@@ -26,6 +26,7 @@ from the water zone if the volumes from the full grid geometry are included, and
 
 ### Added
 - [#662](https://github.com/equinor/webviz-subsurface/pull/662) - Added support in `WellCompletion` for connection history from summary data.
+- [#708](https://github.com/equinor/webviz-subsurface/pull/708) - Added support for new report format for `DiskUsage`, which improves the estimate of free disk space.
 
 ## [0.2.3] - 2021-06-07
 
